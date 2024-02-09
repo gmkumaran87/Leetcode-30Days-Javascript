@@ -4,18 +4,15 @@
  * @return {Function}
  */
 var timeLimit = function (fn, t) {
-  // console.log("Function", fn, t);
-
   return async function (...args) {
     console.log("TImelimit", args);
-    // fn.apply(this, args);
-    return new Promise(function (resolve, reject) {
-      setTimeout(() => {
-        console.log("In Reject", { t, args });
-        reject("Time Limit Exceeded at ");
-      }, t);
-      resolve(fn.apply(this, args));
+
+    const delayedPromise = fn.apply(this, args);
+    const promise = new Promise((resolve, reject) => {
+      setTimeout(() => reject("Time Limit Exceed"), t);
     });
+
+    return Promise.race([delayedPromise, promise]);
   };
 };
 
@@ -27,6 +24,6 @@ const limited = timeLimit(
     }),
   100
 );
-limited(150)
+limited(50)
   .then((s) => console.log(s))
   .catch((e) => console.log(e)); // "Time Limit Exceeded" at t=100ms
